@@ -1,0 +1,26 @@
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import helmet from "helmet";
+import morgan from "morgan";
+import userRoutes from "./routes/user.js";
+import designRoutes from "./routes/designRoute.js";
+import productRoutes from "./routes/productRoute.js";
+dotenv.config();
+const app = express();
+app.use(express.json());
+app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(morgan("common"));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
+app.use("/user", userRoutes);
+app.use("/design", designRoutes);
+app.use("/product", productRoutes);
+const port = parseInt(process.env.PORT) || 7070;
+// const server = createServer(app);
+app.listen(port, () => {
+  console.log(`helloworld: listening on http://localhost:${port}`);
+});

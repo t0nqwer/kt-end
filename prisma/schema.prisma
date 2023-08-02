@@ -1,0 +1,333 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Userrole {
+  role_Id   Int    @id @default(autoincrement())
+  role_name String
+  user      User[]
+}
+
+model User {
+  Username        String         @id
+  First_Name      String
+  Last_Name       String
+  Mobile          Int?
+  Email           String?
+  Password_Hash   String
+  Registtered     DateTime
+  Last_Login      DateTime
+  profile_picture String?
+  role            Userrole       @relation(fields: [roleid], references: [role_Id])
+  roleid          Int
+  RefreshToken    RefreshToken[]
+
+  @@index([roleid])
+}
+
+model RefreshToken {
+  Token    String @db.Text
+  User     User   @relation(references: [Username], fields: [Username])
+  Username String
+
+  @@id([Username])
+  @@index([Username])
+}
+
+model DesignBrand {
+  DesignBrand_ID   Int            @id @default(autoincrement())
+  DesignBrand_Name String
+  ClothDesign      Cloth_Design[]
+}
+
+model Design_Category {
+  Design_Category_ID   Int               @id @default(autoincrement())
+  Design_Category_Name String
+  ClothDesign          Cloth_Design[]
+  ExamplesProduct      ExamplesProduct[]
+}
+
+model PatternDesign {
+  Pattern_Design_ID   Int            @id @default(autoincrement())
+  Pattern_Design_Name String
+  ClothDesign         Cloth_Design[]
+}
+
+model Cloth_Design {
+  Code                String              @id
+  Front_Img           String              @db.Text
+  Back_Img            String              @db.Text
+  Front_Thumbnail     String              @db.Text
+  Back_Thumbnail      String              @db.Text
+  Design_Name         String              @db.Text
+  Product_Description String?             @db.Text
+  Brand               DesignBrand         @relation(fields: [Brand_ID], references: [DesignBrand_ID])
+  Brand_ID            Int
+  Category            Design_Category     @relation(fields: [Category_ID], references: [Design_Category_ID])
+  Category_ID         Int
+  Pattern             PatternDesign       @relation(fields: [Pattern_ID], references: [Pattern_Design_ID])
+  Pattern_ID          Int
+  Detail_img          Design_Detail_img[]
+  Size                Size_Info[]
+  product             Product_Cloth[]
+
+  @@index([Brand_ID])
+  @@index([Category_ID])
+  @@index([Pattern_ID])
+}
+
+model Design_Detail_img {
+  Design_Detail_img_ID Int          @id @default(autoincrement())
+  Design               Cloth_Design @relation(fields: [code], references: [Code])
+  code                 String
+  Img_Url              String       @db.Text
+
+  @@index([code])
+}
+
+model Size {
+  Size_ID   String      @id @db.VarChar(10)
+  Size_Sort Int         @default(1)
+  Size_Info Size_Info[]
+}
+
+model Size_Info {
+  Size_Info_ID String         @id @unique @db.VarChar(50)
+  Design       Cloth_Design   @relation(fields: [code], references: [Code], onDelete: Cascade)
+  Size         Size           @relation(fields: [Size_ID], references: [Size_ID])
+  Size_ID      String         @db.VarChar(10)
+  code         String
+  Size_De_Info Size_De_Info[]
+  Stock_Info   Stock_Info[]
+
+  @@index([code])
+  @@index([Size_ID])
+}
+
+model Size_De {
+  Size_De_ID   Int            @id @default(autoincrement())
+  Size_De_Name String         @db.VarChar(100)
+  Size_De_Info Size_De_Info[]
+}
+
+model Size_De_Info {
+  Size_De_Info_ID String    @id
+  Detail          Size_De   @relation(fields: [Size_De_ID], references: [Size_De_ID])
+  Size_De_ID      Int
+  Size_Info       Size_Info @relation(fields: [Size_Info_ID], references: [Size_Info_ID], onDelete: Cascade)
+  Size_Info_ID    String
+  Info            Decimal   @db.Decimal(10, 2)
+
+  @@index([Size_De_ID])
+  @@index([Size_Info_ID])
+}
+
+model Product_Category {
+  Product_Category_ID   Int       @id @default(autoincrement())
+  Product_Category_Name String
+  Product               Product[]
+}
+
+model Product {
+  Product_ID          Int              @id @default(autoincrement())
+  Title               String           @default("สินค้า")
+  Price               Decimal          @db.Decimal(20, 2)
+  Front_img           String           @db.Text
+  Back_img            String           @db.Text
+  Front_Thumbnail     String           @db.Text
+  Back_Thumbnail      String           @db.Text
+  Description         String?          @db.Text
+  product_category    Product_Category @relation(fields: [Product_Category_ID], references: [Product_Category_ID])
+  Product_Category_ID Int              @default(1)
+  Supplier            Product_Supplier @relation(fields: [Product_Supplier_ID], references: [ID])
+  Product_Supplier_ID Int
+  created             DateTime         @default(now())
+  Product_Detail      Product_Detail[]
+  Stock_Info          Stock_Info[]
+
+  @@index([Product_Supplier_ID])
+  @@index([Product_Category_ID])
+}
+
+model Product_Supplier {
+  ID          Int       @id @default(autoincrement())
+  Name        String    @default("สินค้า")
+  Description String?   @db.Text
+  Product     Product[]
+}
+
+model Product_Detail {
+  ID         Int     @id @default(autoincrement())
+  Img_Url    String  @db.Text
+  Product    Product @relation(fields: [Product_ID], references: [Product_ID], onDelete: Cascade)
+  Product_ID Int
+
+  @@index([Product_ID])
+}
+
+model Fabric {
+  Fabric_ID               Int                    @id @default(autoincrement())
+  description             String?                @db.Text
+  weaving_ID              Int
+  FabricColorTechnique_ID Int
+  FabricPattern_ID        Int?
+  Fabrictype_id           Int
+  Weaving                 Fabric_Weaving         @relation(fields: [weaving_ID], references: [weaving_ID])
+  Color                   Fabric_Color_Technique @relation(fields: [FabricColorTechnique_ID], references: [FabricColorTechnique_ID])
+  Pattern                 FabricPattern?         @relation(fields: [FabricPattern_ID], references: [FabricPattern_ID])
+  Type                    FabricType             @relation(fields: [Fabrictype_id], references: [ID])
+  Product                 Product_Cloth[]
+
+  @@index([Fabrictype_id])
+  @@index([weaving_ID])
+  @@index([FabricColorTechnique_ID])
+  @@index([FabricPattern_ID])
+}
+
+model Product_Cloth {
+  product_id           Int                    @id @default(autoincrement())
+  code                 String
+  fabric_id            Int
+  description          String?                @db.Text
+  Front_img            String                 @db.Text
+  Back_img             String                 @db.Text
+  Front_Thumbnail      String                 @db.Text
+  Forweb               Boolean                @default(false)
+  IsHero               Boolean                @default(false)
+  design               Cloth_Design           @relation(fields: [code], references: [Code])
+  fabric               Fabric                 @relation(fields: [fabric_id], references: [Fabric_ID])
+  price                Decimal                @db.Decimal(20, 2)
+  created              DateTime               @default(now())
+  Product_Cloth_Detail Product_Cloth_Detail[]
+  Stock_Info           Stock_Info[]
+  ProductOne           ProductSet[]           @relation("one")
+  ProductTwo           ProductSet[]           @relation("two")
+
+  @@index([fabric_id])
+  @@index([code])
+}
+
+model Product_Cloth_Detail {
+  ID         Int           @id @default(autoincrement())
+  Img_Url    String        @db.Text
+  Product    Product_Cloth @relation(fields: [Product_ID], references: [product_id], onDelete: Cascade)
+  Product_ID Int
+
+  @@index([Product_ID])
+}
+
+model Fabric_Weaving {
+  weaving_ID          Int      @id @default(autoincrement())
+  weaving_name        String
+  weaving_description String   @default("") @db.Text
+  fabric              Fabric[]
+}
+
+model Fabric_Color_Pattern {
+  Fabric_Color_Pattern_Id   Int    @id @default(autoincrement())
+  Fabric_Color_Pattern_Name String
+}
+
+model Fabric_Color_Technique {
+  FabricColorTechnique_ID   Int      @id @default(autoincrement())
+  FabricColorTechnique_name String
+  fabric                    Fabric[]
+}
+
+model FabricPattern {
+  FabricPattern_ID           Int      @id @default(autoincrement())
+  FabricPatternName          String   @db.Text
+  FabricPattern_Descripttion String?  @db.Text
+  fabric                     Fabric[]
+}
+
+model FabricType {
+  ID     Int      @id @default(autoincrement())
+  name   String
+  fabric Fabric[]
+}
+
+model ExamplesProduct {
+  id                         Int                          @id @default(autoincrement())
+  name                       String
+  category_id                Int
+  categoty                   Design_Category              @relation(fields: [category_id], references: [Design_Category_ID])
+  Price                      Int
+  Description                String?
+  Front_img                  String
+  Back_img                   String
+  Front_Small                String
+  created                    DateTime                     @default(now())
+  ExamplesProductDetailImage ExamplesProductDetailImage[]
+  Stock_Info                 Stock_Info[]
+
+  @@index([category_id])
+}
+
+model ExamplesProductDetailImage {
+  id               Int             @id @default(autoincrement())
+  ExamplrProductId Int
+  ExampleProduct   ExamplesProduct @relation(fields: [ExamplrProductId], references: [id], onDelete: Cascade)
+  Url              String
+
+  @@index([ExamplrProductId])
+}
+
+model ProductSet {
+  Id           Int            @id @default(autoincrement())
+  ProductOne   Int
+  ProductTwo   Int
+  ProductOneID Product_Cloth? @relation("one", fields: [ProductOne], references: [product_id])
+  ProductTwoID Product_Cloth? @relation("two", fields: [ProductTwo], references: [product_id])
+  Price        Int
+
+  @@index([ProductOne])
+  @@index([ProductTwo])
+}
+
+model Stock_Info {
+  Barcode           String           @id
+  Product_Cloth_Id  Int?
+  Product_Id        Int?
+  Size_Info_Id      String?
+  ExampleProduct_Id Int?
+  ExampleProduct    ExamplesProduct? @relation(fields: [ExampleProduct_Id], references: [id], onDelete: Cascade)
+  Product           Product?         @relation(fields: [Product_Id], references: [Product_ID], onDelete: Cascade)
+  Product_Cloth     Product_Cloth?   @relation(fields: [Product_Cloth_Id], references: [product_id])
+  Size_Info         Size_Info?       @relation(fields: [Size_Info_Id], references: [Size_Info_ID], onDelete: Cascade)
+
+  @@index([Product_Cloth_Id])
+  @@index([Product_Id])
+  @@index([Size_Info_Id])
+  @@index([ExampleProduct_Id])
+}
+
+model employee {
+  id          Int          @id @default(autoincrement())
+  first_name  String
+  last_name   String
+  first_name_thai String
+  last_name_thai String
+  date_joined DateTime
+  birthday    DateTime 
+  password    String
+  Profile_Img String?
+  role        employeeRole @relation(fields: [role_id], references: [id])
+  role_id     Int
+  token       String?
+
+  @@index([role_id])
+}
+
+model employeeRole {
+  id       Int        @id @default(autoincrement())
+  name     String
+  priority Int @default(1)
+  employee employee[]
+}
