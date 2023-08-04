@@ -90,10 +90,9 @@ export const GetAddDesignData = async (req, res) => {
         Code: true,
       },
     });
-    res
-      .status(200)
-      .json({ brand, category, pattern, size, sizeDetail, code, user });
+    res.status(200).json({ brand, category, pattern, size, sizeDetail, code });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };
