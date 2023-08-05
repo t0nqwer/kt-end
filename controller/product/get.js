@@ -453,7 +453,30 @@ export const getSingleKhwanta = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-export const getAddProduct = async (req, res) => {};
+export const getAddProduct = async (req, res) => {
+  try {
+    const design = await prisma.cloth_Design.findMany({
+      select:{
+        Code:true,
+      }
+    });
+    const fabric = await prisma.fabric.findMany({
+      select: {
+        Weaving: true,
+        Pattern: true,
+        Color: true,
+        Fabric_ID: true,
+        Type: true,
+      },
+    });
+    const product = await prisma.product_Cloth.findMany();
+    res.status(200).json({ design, fabric, product});
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: "ไม่สามารถเรียกดูข้อมูลได้ โปรดลองอีกครั้ง" });
+  }
+};
 export const deleteCloth = async (req, res) => {};
 export const deleteKhwanta = async (req, res) => {};
 export const deleteExample = async (req, res) => {};
