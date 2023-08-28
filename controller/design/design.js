@@ -96,7 +96,50 @@ export const GetAddDesignData = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-export const CreateDesign = async (req, res) => {};
+export const CreateDesign = async (req, res) => {
+  const { data, image } = req.body;
+  try {
+    // throw Error("not implemented");
+    await prisma.$transaction([
+      prisma.cloth_Design.create({
+        data: {
+          Code: data.code,
+          Design_Name: data.name,
+          Front_Img: image[2],
+          Back_Img: image[1],
+          Front_Thumbnail: `https://storage.googleapis.com/khwantadashboard.appspot.com/Design/front/${data.code}-front_300x450`,
+          Back_Thumbnail: `https://storage.googleapis.com/khwantadashboard.appspot.com/Design/back/${data.code}-front_300x450`,
+          Brand_ID: data.brand,
+          Category_ID: data.category,
+          Pattern_ID: data.pattern,
+          Detail_img: {
+            create: [...image[0].map((image) => ({ Img_Url: image }))],
+          },
+          Size: {
+            create: [
+              ...data.size.map((size) => ({
+                Size_Info_ID: `${data.code}${size.Size_ID}`,
+                Size_ID: size.Size_ID,
+              })),
+            ],
+          },
+        },
+      }),
+      prisma.size_De_Info.createMany({
+        data: data.sizeInput.map((p) => ({
+          Size_De_Info_ID: `${data.code}${p.id}`,
+          Size_De_ID: +p.detail,
+          Size_Info_ID: `${data.code}${p.size}`,
+          Info: +p.data,
+        })),
+      }),
+    ]);
+    res.status(200).json({ message: "success" });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
 export const UpdateDesign = async (req, res) => {};
 export const DeleteDesign = async (req, res) => {};
 export const GetDesignById = async (req, res) => {
